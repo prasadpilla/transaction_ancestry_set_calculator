@@ -2,6 +2,7 @@ import time
 
 import requests
 
+from exceptions import FetchException
 from logger import log
 
 
@@ -15,12 +16,12 @@ class TransactionFetcher:
 
         if response.status_code != 200:
             log(f'Failed to fetch the block for the given block height: {self.block_height}')
+            raise FetchException("Received non 200 response code" + response.text)
 
-        # TODO: Handle exceptions and bubble up
         return response.text
 
     def fetch_block_transactions_for_index(self, block_hash, index):
-        log(f'Fetching for block hash: {block_hash}, index: {index}')
+        log(f'Fetching transactions for block hash: {block_hash}, index: {index}')
         response = requests.get(f'{self.base_url}/api/block/{block_hash}/txs/{index}')
 
         if response.status_code == 404:
@@ -29,8 +30,8 @@ class TransactionFetcher:
 
         if response.status_code != 200:
             log(f'Failed to fetch the transactions list for the hash: {block_hash}')
+            raise FetchException("Received non 200 response code" + response.text)
 
-        # TODO: Handle exceptions and bubble up
         return response.json()
 
     def fetch_block_transactions(self):
@@ -41,13 +42,13 @@ class TransactionFetcher:
             transactions = self.fetch_block_transactions_for_index(block_hash, index)
             # TODO: Revisit later: Hack to avoid limits while debugging.
             # We might actually need have some time between calls in prod as well, but more on that later.
-            time.sleep(1)
+            time.sleep(.5)
             index += 25
 
             if len(transactions) == 0:
                 break
             else:
-                all_transactions.append(transactions)
+                all_transactions += transactions
 
         return all_transactions
 

@@ -1,6 +1,21 @@
+from exceptions import ComputeException
+
+
 class AncestryCalculator:
-    def __init__(self, pairs):
-        self.pairs = pairs
+    def __init__(self, transactions):
+        self.transactions = transactions
+
+    def generate_pairs(self):
+        tx_hash = {}
+        for tx in self.transactions:
+            tx_hash[tx["txid"]] = True
+
+        pairs = []
+        for mainTxn in self.transactions:
+            for inTx in mainTxn['vin']:
+                if inTx['txid'] in tx_hash:
+                    pairs.append([inTx['txid'], mainTxn['txid']])
+        return pairs
 
     def visit(self, node, graph, visited):
         if node in visited: return visited[node]
@@ -15,18 +30,20 @@ class AncestryCalculator:
         return parents
 
     def compute(self, n):
-        graph = {}
-        for parent, child in self.pairs:
-            if child not in graph:
-                graph[child] = [parent]
-            else:
-                graph[child].append(parent)
+        try:
+            pairs = self.generate_pairs()
+            graph = {}
+            for parent, child in pairs:
+                if child not in graph:
+                    graph[child] = [parent]
+                else:
+                    graph[child].append(parent)
 
-        ancestry = {}
-        for k in graph:
-            if k not in ancestry:
-                self.visit(k, graph, ancestry)
+            ancestry = {}
+            for k in graph:
+                if k not in ancestry:
+                    self.visit(k, graph, ancestry)
 
-        top_ten_nodes = dict(sorted(ancestry.items(), reverse=True, key=lambda item: len(item[1]))[:n]).keys()
-
-        return top_ten_nodes
+            return list(dict(sorted(ancestry.items(), reverse=True, key=lambda item: len(item[1]))[:n]).keys())
+        except RuntimeError as e:
+            raise ComputeException("Exception occurred while computing the ancestry" + str(e))
