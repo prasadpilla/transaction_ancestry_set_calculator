@@ -14,7 +14,7 @@ class AncestryCalculator:
         visited[node] = parents
         return parents
 
-    def compute(self):
+    def compute(self, n):
         graph = {}
         for parent, child in self.pairs:
             if child not in graph:
@@ -27,6 +27,6 @@ class AncestryCalculator:
             if k not in ancestry:
                 self.visit(k, graph, ancestry)
 
-        top_ten_nodes = dict(sorted(ancestry.items(), reverse=True, key=lambda item: len(item[1]))[:10]).keys()
+        top_ten_nodes = dict(sorted(ancestry.items(), reverse=True, key=lambda item: len(item[1]))[:n]).keys()
 
         return top_ten_nodes

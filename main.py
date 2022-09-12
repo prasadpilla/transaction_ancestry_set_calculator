@@ -10,8 +10,8 @@ BLOCK_HEIGHT = 680000
 def main():
     transactions = TransactionFetcher(BASE_URL, BLOCK_HEIGHT).fetch_block_transactions()
     log(transactions)
-    top_ten = AncestryCalculator([['A', 'D'], ['A', 'G'], ['F', 'G'], ['G', 'K'], ['G', 'L'], ['F', 'L']]).compute()
-    log(top_ten)
+    top_two = AncestryCalculator([['A', 'D'], ['A', 'G'], ['F', 'G'], ['G', 'K'], ['G', 'L'], ['F', 'L']]).compute(2)
+    log(top_two)
 
 if __name__ == '__main__':
     main()
